@@ -25,6 +25,7 @@
 #include <thread>
 #include <pangolin/pangolin.h>
 #include <iomanip>
+#include <unistd.h>
 
 namespace ORB_SLAM2
 {
@@ -411,9 +412,52 @@ void System::SaveKeyFrameTrajectoryTUM(const string &filename)
           << " " << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << endl;
 
     }
-
     f.close();
     cout << endl << "trajectory saved!" << endl;
+}
+
+void System::SaveKeyFramePointsPair(const string &filename) {
+    ofstream f;
+    f.open(filename.c_str());
+    f << fixed;
+
+    vector<KeyFrame*> vpKFs = mpMap->GetAllKeyFrames();
+
+    // Iterate over each keyframe
+    for (KeyFrame* pKF : vpKFs) {
+        // Skip invalid keyframes
+        if (!pKF || pKF->isBad()) continue;
+
+        // Write the camera pose (Tcw)
+        cv::Mat Tcw = pKF->GetPose();
+        cv::Mat Rwc = Tcw.rowRange(0, 3).colRange(0, 3).t();    // Rotation component
+        cv::Mat twc = -Rwc * Tcw.rowRange(0, 3).col(3);         // Translation component
+        std::vector<float> q = Converter::toQuaternion(Rwc);    // Quaternion for rotation
+        f << "# Pose: " << twc.at<float>(0) << " " << twc.at<float>(1) << " " << twc.at<float>(2) << " "
+             << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << "\n";
+
+        for (size_t i = 0; i < pKF->mvKeysUn.size(); i++) {
+            MapPoint* pMP = pKF->GetMapPoint(i);
+            if (!pMP || pMP->isBad()) continue;
+
+            // 3D position of the MapPoint in world coordinates
+            cv::Mat pt3d = pMP->GetWorldPos();
+
+            // 2D position of the corresponding keypoint in the image (in pixels)
+            const cv::KeyPoint& kpUn = pKF->mvKeysUn[i];
+            float u = kpUn.pt.x;
+            float v = kpUn.pt.y;
+
+            // Write 2D-3D pair (u, v, x, y, z)
+            f << std::fixed << std::setprecision(6)
+                 << u << " " << v << " "
+                 << pt3d.at<float>(0) << " " << pt3d.at<float>(1) << " " << pt3d.at<float>(2)
+                 << "\n";
+        }
+        f << "\n";
+    }
+    f.close();
+    std::cout << "2D-3D correspondences saved to " << filename << std::endl;
 }
 
 void System::SaveTrajectoryKITTI(const string &filename)

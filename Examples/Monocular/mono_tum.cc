@@ -27,6 +27,7 @@
 #include<opencv2/core/core.hpp>
 
 #include<System.h>
+#include <unistd.h>
 
 using namespace std;
 
@@ -121,6 +122,7 @@ int main(int argc, char **argv)
 
     // Save camera trajectory
     SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");
+    SLAM.SaveKeyFramePointsPair(string(argv[3])+"AllPairs.txt");
 
     return 0;
 }

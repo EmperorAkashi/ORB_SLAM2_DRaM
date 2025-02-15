@@ -106,6 +106,13 @@ public:
     // See format details at: http://vision.in.tum.de/data/datasets/rgbd-dataset
     void SaveKeyFrameTrajectoryTUM(const string &filename);
 
+    /**
+     * @brief save list of pairs for all keyframes, the format will be
+     * u, v, x, y, z; u and v in normalized image plane, and different frames'
+     * are separated by an empty line
+     */
+    void SaveKeyFramePointsPair(const string &filename);
+
     // Save camera trajectory in the KITTI dataset format.
     // Only for stereo and RGB-D. This method does not work for monocular.
     // Call first Shutdown()
