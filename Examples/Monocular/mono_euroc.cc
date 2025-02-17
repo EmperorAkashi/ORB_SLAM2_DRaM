@@ -135,22 +135,50 @@ void LoadImages(const string &strImagePath, const string &strPathTimes,
                 vector<string> &vstrImages, vector<double> &vTimeStamps)
 {
     ifstream fTimes;
+    
     fTimes.open(strPathTimes.c_str());
+    if(!fTimes.is_open()) {
+        cerr << "Failed to open timestamps file" << endl;
+        return;
+    }
+    
     vTimeStamps.reserve(5000);
     vstrImages.reserve(5000);
+    
     while(!fTimes.eof())
     {
         string s;
-        getline(fTimes,s);
+        getline(fTimes, s);
+        
+        // Remove any carriage returns or newlines
+        s.erase(remove(s.begin(), s.end(), '\r'), s.end());
+        s.erase(remove(s.begin(), s.end(), '\n'), s.end());
+        
         if(!s.empty())
         {
-            stringstream ss;
-            ss << s;
-            vstrImages.push_back(strImagePath + "/" + ss.str() + ".png");
+            // Clean the timestamp string
+            string timestamp = s;
+            
+            // Build the image path carefully
+            string imagePath = strImagePath + "/" + timestamp + ".png";
+            
+            if(vstrImages.size() < 2) {  // Only debug first two entries
+                cout << "Raw timestamp: '" << timestamp << "'" << endl;
+                cout << "Full image path: '" << imagePath << "'" << endl;
+            }
+            
+            vstrImages.push_back(imagePath);
+            
+            // Convert timestamp to double
+            stringstream ss(timestamp);
             double t;
             ss >> t;
             vTimeStamps.push_back(t/1e9);
-
         }
+    }
+    
+    cout << "Loaded " << vstrImages.size() << " image paths" << endl;
+    if(!vstrImages.empty()) {
+        cout << "First image path: '" << vstrImages[0] << "'" << endl;
     }
 }
