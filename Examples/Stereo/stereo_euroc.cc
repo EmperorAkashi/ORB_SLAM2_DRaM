@@ -102,7 +102,7 @@ int main(int argc, char **argv)
     const int nImages = vstrImageLeft.size();
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
-    ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::STEREO,true);
+    ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::STEREO, false); // deactivate viewer
 
     // Vector for tracking time statistics
     vector<float> vTimesTrack;
@@ -185,7 +185,8 @@ int main(int argc, char **argv)
     cout << "mean tracking time: " << totaltime/nImages << endl;
 
     // Save camera trajectory
-    SLAM.SaveTrajectoryTUM("CameraTrajectory.txt");
+    SLAM.SaveKeyFrameTrajectoryTUM(string(argv[3])+"KeyFrameTrajectory.txt");
+    SLAM.SaveKeyFramePointsPair(string(argv[3])+"AllPairs.txt");
 
     return 0;
 }
@@ -195,23 +196,37 @@ void LoadImages(const string &strPathLeft, const string &strPathRight, const str
 {
     ifstream fTimes;
     fTimes.open(strPathTimes.c_str());
+
     vTimeStamps.reserve(5000);
     vstrImageLeft.reserve(5000);
     vstrImageRight.reserve(5000);
+
     while(!fTimes.eof())
     {
         string s;
         getline(fTimes,s);
+
+        // Remove any carriage returns or newlines
+        s.erase(remove(s.begin(), s.end(), '\r'), s.end());
+        s.erase(remove(s.begin(), s.end(), '\n'), s.end());
+
         if(!s.empty())
         {
-            stringstream ss;
-            ss << s;
-            vstrImageLeft.push_back(strPathLeft + "/" + ss.str() + ".png");
-            vstrImageRight.push_back(strPathRight + "/" + ss.str() + ".png");
+            // Clean the timestamp string
+            string timestamp = s;
+            
+            // Build the image path carefully
+            string imagePathLeft = strPathLeft + "/" + timestamp + ".png";
+            string imagePathRight = strPathRight + "/" + timestamp + ".png";
+
+            vstrImageLeft.push_back(imagePathLeft);
+            vstrImageRight.push_back(imagePathRight);
+
+            // Convert timestamp to double
+            stringstream ss(timestamp);
             double t;
             ss >> t;
             vTimeStamps.push_back(t/1e9);
-
         }
     }
 }
