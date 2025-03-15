@@ -1,4 +1,4 @@
-# ORB-SLAM2
+# ORB-SLAM2 (Customized version by Chen Lin from Flatiron Institute)
 **Authors:** [Raul Mur-Artal](http://webdiis.unizar.es/~raulmur/), [Juan D. Tardos](http://webdiis.unizar.es/~jdtardos/), [J. M. M. Montiel](http://webdiis.unizar.es/~josemari/) and [Dorian Galvez-Lopez](http://doriangalvez.com/) ([DBoW2](https://github.com/dorian3d/DBoW2))
 
 **13 Jan 2017**: OpenCV 3 and Eigen 3.3 are now supported.
@@ -82,6 +82,11 @@ Clone the repository:
 ```
 git clone https://github.com/raulmur/ORB_SLAM2.git ORB_SLAM2
 ```
+Currently I use the public Docker image:
+```
+https://hub.docker.com/r/celinachild/orbslam2
+```
+The **System.h** need to be added into several executable which already be updated in this customized repo
 
 We provide a script `build.sh` to build the *Thirdparty* libraries and *ORB-SLAM2*. Please make sure you have installed all required dependencies (see section 2). Execute:
 ```
